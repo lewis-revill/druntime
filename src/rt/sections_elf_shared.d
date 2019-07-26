@@ -847,7 +847,7 @@ static if (SharedELF) void scanSegments(in ref dl_phdr_info info, DSO* pdso) not
             else
                 pdso._tlsMod = info.dlpi_tls_modid;
             pdso._tlsSize = phdr.p_memsz;
-            version (LDC)
+            version (none)
             {
                 // align to multiple of size_t to avoid misaligned scanning
                 // (size is subtracted from TCB address to get base of TLS)
