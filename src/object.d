@@ -3034,7 +3034,7 @@ template RTInfo(T)
 * used instead of the actual pointer bitmap
 */
 enum immutable(void)* rtinfoNoPointers  = null;
-enum immutable(void)* rtinfoHasPointers = cast(void*)1;
+enum immutable(void)* rtinfoHasPointers = cast(void*) size_t.sizeof;
 
 // Helper functions
 

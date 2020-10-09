@@ -65,10 +65,10 @@ version (SupportSanitizers)
         import core.atomic: atomicLoad, atomicStore, MemoryOrder;
 
         // If `fptr` is null, it's not initialized yet.
-        // If `fptr` is 1, the function has not been found.
+        // If `fptr` is `size_t.sizeof`, the function has not been found.
         // Otherwise, `fptr` is a valid function pointer.
         static shared typeof(mixin("&" ~ functionName)) fptr = null;
-        enum FUNC_NOT_FOUND = cast(void*) 1;
+        enum FUNC_NOT_FOUND = cast(void*) size_t.sizeof;
 
         // Because `fptr` will never change after it's been initialized, we only have to make sure
         // that the read is atomic for thread safety.
