@@ -204,13 +204,12 @@ assert(v.array == a);
 template loadUnaligned(V)
 if(is(typeof(llvmVecType!V)))
 {
-    enum llvmElementType = llvmType!(BaseType!V);
     enum llvmV = llvmVecType!V;
     enum ir = `
-        %p = bitcast `~llvmElementType~`* %0 to `~llvmV~`*
+        %p = bitcast i8* %0 to `~llvmV~`*
         %r = load `~llvmV~`, `~llvmV~`* %p, align 1
         ret `~llvmV~` %r`;
-    private alias impl = __ir_pure!(ir, V, const(BaseType!V)*);
+    private alias impl = __ir_pure!(ir, V, const void*);
 
     pragma(inline, true):
 
@@ -222,7 +221,7 @@ if(is(typeof(llvmVecType!V)))
     /// Deprecated: This is the DMD interface, use it only for DMD compatibility. Otherwise, please use the LDC interface.
     V loadUnaligned(const V* p)
     {
-        return impl(cast(const(BaseType!V)*) p);
+        return impl(p);
     }
 }
 
@@ -239,12 +238,11 @@ assert(v.array == a);
 template storeUnaligned(V)
 if(is(typeof(llvmVecType!V)))
 {
-    enum llvmElementType = llvmType!(BaseType!V);
     enum llvmV = llvmVecType!V;
     enum ir = `
-        %p = bitcast `~llvmElementType~`* %1 to `~llvmV~`*
+        %p = bitcast i8* %1 to `~llvmV~`*
         store `~llvmV~` %0, `~llvmV~`* %p, align 1`;
-    private alias impl = __ir_pure!(ir, void, V, BaseType!V*);
+    private alias impl = __ir_pure!(ir, void, V, void*);
 
     pragma(inline, true):
 
@@ -256,7 +254,7 @@ if(is(typeof(llvmVecType!V)))
     /// Deprecated: This is the DMD interface, use it only for DMD compatibility. Otherwise, please use the LDC interface.
     V storeUnaligned(V* p, V value)
     {
-        impl(value, cast(BaseType!V*) p);
+        impl(value, p);
         return value;
     }
 }
