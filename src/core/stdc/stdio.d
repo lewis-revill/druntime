@@ -347,6 +347,31 @@ else version (CRuntime_UClibc)
         L_tmpnam     = 20
     }
 }
+else version (FreeStanding)
+{
+    // Sensible defaults based on newlib.
+    enum
+    {
+        ///
+        BUFSIZ       = 1024,
+        ///
+        EOF          = -1,
+        ///
+        FOPEN_MAX    = 20,
+        ///
+        FILENAME_MAX = 1024,
+        ///
+        TMP_MAX      = 26,
+        ///
+        L_tmpnam     = 1024
+    }
+
+    struct __sbuf
+    {
+        ubyte *_base;
+        int _size;
+    }
+}
 else
 {
     static assert( false, "Unsupported platform" );
@@ -792,6 +817,54 @@ else version (CRuntime_UClibc)
     ///
     alias shared(__STDIO_FILE_STRUCT) FILE;
 }
+else version (FreeStanding)
+{
+    // Sensible defaults based on newlib's implementation. TODO: Detect actual
+    // libc rather than relying on the OS in the triple.
+
+    alias c_long ssize_t;
+    alias c_long fpos_t;
+    alias ptrdiff_t off_t;
+
+    struct __sFILE
+    {
+        ubyte* _p;	/* current position in (some) buffer */
+        int _r;		/* read space left for getc() */
+        int _w;		/* write space left for putc() */
+        short _flags;		/* flags, below; this FILE is free if 0 */
+        short _file;		/* fileno, if Unix descriptor, else -1 */
+        __sbuf _bf;	/* the buffer (at least 1 byte, if !NULL) */
+        int	_lbfsize;	/* 0 or -_bf._size, for inline putc */
+
+        /* operations */
+        void* _cookie;	/* cookie passed to io functions */
+
+       ssize_t function(void* __cookie, char* __buf, size_t __bufsize)       _read;
+       ssize_t function(void* __cookie, const char* __buf, size_t __bufsize) _write;
+       fpos_t  function(void* __cookie, fpos_t* __pos, int __whence)         _seek;
+       int     function(void* __cookie)                                      _close;
+
+        /* separate buffer for long sequences of ungetc() */
+        __sbuf _ub;	/* ungetc buffer */
+        ubyte* _up;	/* saved _p when _p is doing ungetc data */
+        int _ur;		/* saved _r when _r is counting ungetc data */
+
+        /* tricks to meet minimum requirements even when malloc() fails */
+        ubyte[3] _ubuf;	/* guarantee an ungetc() buffer */
+        ubyte[1] _nbuf;	/* guarantee a getc() buffer */
+
+        /* separate buffer for fgetline() when line crosses buffer boundary */
+        __sbuf _lb;	/* buffer for fgetline() */
+
+        /* Unix stdio files get aligned to block boundaries on fseek() */
+        int	_blksize;	/* stat.st_blksize (may be != _bf._size) */
+        off_t _offset;	/* current lseek offset */
+    }
+
+    alias __sFILE _iobuf;
+
+    alias shared(__sFILE) FILE;
+}
 else
 {
     static assert( false, "Unsupported platform" );
@@ -1112,6 +1185,27 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
+    enum
+    {
+        ///
+        _IOFBF = 0,
+        ///
+        _IOLBF = 1,
+        ///
+        _IONBF = 2,
+    }
+
+    ///
+    extern shared FILE* stdin;
+    ///
+    extern shared FILE* stdout;
+    ///
+    extern shared FILE* stderr;
+}
+else version (FreeStanding)
+{
+    // Sensible defaults based on newlib.
+
     enum
     {
         ///
@@ -1789,6 +1883,30 @@ else version (CRuntime_UClibc)
     ///
     int  fileno(FILE *);
   }
+
+    ///
+    pragma(printf)
+    int  snprintf(scope char* s, size_t n, scope const char* format, scope const ...);
+    ///
+    pragma(printf)
+    int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+}
+else version (FreeStanding)
+{
+    // No unsafe pointer manipulation.
+    @trusted
+    {
+        ///
+        void rewind(FILE* stream);
+        ///
+        pure void clearerr(FILE* stream);
+        ///
+        pure int  feof(FILE* stream);
+        ///
+        pure int  ferror(FILE* stream);
+        ///
+        int  fileno(FILE *);
+    }
 
     ///
     pragma(printf)

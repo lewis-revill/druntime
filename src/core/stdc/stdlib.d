@@ -95,6 +95,12 @@ else version (Solaris) enum RAND_MAX = 0x7fff;
 else version (CRuntime_Bionic) enum RAND_MAX = 0x7fffffff;
 else version (CRuntime_Musl) enum RAND_MAX = 0x7fffffff;
 else version (CRuntime_UClibc) enum RAND_MAX = 0x7fffffff;
+else version (FreeStanding)
+{
+  // Sensible defaults based on the ABI.
+  version (D_LP64) enum RAND_MAX = 0x7fffffff;
+  else             enum RAND_MAX = 0x7fff;
+}
 else static assert( false, "Unsupported platform" );
 
 ///

@@ -163,6 +163,38 @@ else version (Posix)
     alias ulong cpp_ulonglong;
   }
 }
+else version (FreeStanding)
+{
+  // Sensible defaults based on the ABI.
+  version (D_LP64)
+  {
+    enum __c_long  : long;
+    enum __c_ulong : ulong;
+
+    alias long   c_long;
+    alias ulong  c_ulong;
+
+    alias __c_long   cpp_long;
+    alias __c_ulong  cpp_ulong;
+
+    alias long  cpp_longlong;
+    alias ulong cpp_ulonglong;
+  }
+  else // ILP32
+  {
+    enum __c_long  : int;
+    enum __c_ulong : uint;
+
+    alias int   c_long;
+    alias uint  c_ulong;
+
+    alias __c_long   cpp_long;
+    alias __c_ulong  cpp_ulong;
+
+    alias long  cpp_longlong;
+    alias ulong cpp_ulonglong;
+  }
+}
 
 version (GNU)
     alias c_long_double = real;
